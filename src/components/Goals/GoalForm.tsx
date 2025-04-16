@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue 
 } from '@/components/ui/select';
+import { Loader2 } from 'lucide-react';
 
 // Define schema for form
 const formSchema = z.object({
@@ -37,12 +38,14 @@ interface GoalFormProps {
   onSubmit: (data: GoalFormValues) => void;
   defaultValues?: GoalFormValues;
   isEditing?: boolean;
+  isSubmitting?: boolean;
 }
 
 const GoalForm: React.FC<GoalFormProps> = ({ 
   onSubmit, 
   defaultValues,
-  isEditing = false
+  isEditing = false,
+  isSubmitting = false
 }) => {
   // Initialize form with default values
   const form = useForm<GoalFormValues>({
@@ -192,7 +195,16 @@ const GoalForm: React.FC<GoalFormProps> = ({
         )}
 
         <div className="flex justify-end">
-          <Button type="submit">{isEditing ? 'Update Goal' : 'Save Goal'}</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isEditing ? 'Updating...' : 'Saving...'}
+              </>
+            ) : (
+              isEditing ? 'Update Goal' : 'Save Goal'
+            )}
+          </Button>
         </div>
       </form>
     </Form>

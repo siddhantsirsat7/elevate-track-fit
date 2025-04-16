@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Plus, Filter, Search, CheckCircle } from 'lucide-react';
+import { Plus, Filter, Search, CheckCircle, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -12,32 +12,53 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { mockGoals } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { goalsAPI } from '@/lib/api';
+
+interface Goal {
+  _id: string;
+  name: string;
+  type: 'weight' | 'workout' | 'distance' | 'strength' | 'custom';
+  target: number;
+  unit: string;
+  deadline: string;
+  progress: number;
+  completed: boolean;
+}
 
 const Goals: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [filterType, setFilterType] = React.useState<string>('all');
   const [filterStatus, setFilterStatus] = React.useState<string>('all');
+  
+  const { data: goals, isLoading, error } = useQuery({
+    queryKey: ['goals'],
+    queryFn: goalsAPI.getAll,
+  });
 
   // Filter and sort goals
-  const filteredGoals = mockGoals
-    .filter((goal) => {
-      const matchesSearch = goal.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesType = filterType === 'all' || goal.type === filterType;
-      const matchesStatus =
-        filterStatus === 'all' ||
-        (filterStatus === 'completed' && goal.completed) ||
-        (filterStatus === 'in-progress' && !goal.completed);
-      return matchesSearch && matchesType && matchesStatus;
-    })
-    .sort((a, b) => {
-      // Sort by completion status, then by deadline
-      if (a.completed !== b.completed) {
-        return a.completed ? 1 : -1;
-      }
-      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-    });
+  const filteredGoals = React.useMemo(() => {
+    if (!goals) return [];
+    
+    return goals
+      .filter((goal: Goal) => {
+        const matchesSearch = goal.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = filterType === 'all' || goal.type === filterType;
+        const matchesStatus =
+          filterStatus === 'all' ||
+          (filterStatus === 'completed' && goal.completed) ||
+          (filterStatus === 'in-progress' && !goal.completed);
+        return matchesSearch && matchesType && matchesStatus;
+      })
+      .sort((a: Goal, b: Goal) => {
+        // Sort by completion status, then by deadline
+        if (a.completed !== b.completed) {
+          return a.completed ? 1 : -1;
+        }
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+      });
+  }, [goals, searchTerm, filterType, filterStatus]);
 
   // Format date for display
   const formatDate = (dateString: string): string => {
@@ -56,6 +77,15 @@ const Goals: React.FC = () => {
     const diffTime = deadlineDate.getTime() - today.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-destructive mb-4">Failed to load goals</p>
+        <Button onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -107,7 +137,11 @@ const Goals: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        {filteredGoals.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : filteredGoals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed rounded-lg">
             <p className="text-muted-foreground mb-4">No goals found</p>
             <Button asChild>
@@ -117,14 +151,14 @@ const Goals: React.FC = () => {
             </Button>
           </div>
         ) : (
-          filteredGoals.map((goal) => {
+          filteredGoals.map((goal: Goal) => {
             const progressPercent = Math.round((goal.progress / goal.target) * 100);
             const daysLeft = getDaysRemaining(goal.deadline);
             
             return (
               <Link
-                key={goal.id}
-                to={`/goals/${goal.id}`}
+                key={goal._id}
+                to={`/goals/${goal._id}`}
                 className="block"
               >
                 <div className={cn(

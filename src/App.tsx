@@ -15,6 +15,8 @@ import Login from "@/pages/Auth/Login";
 import Register from "@/pages/Auth/Register";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import AddWorkoutForm from "@/components/Workouts/AddWorkoutForm";
+import AddGoalForm from "@/components/Goals/AddGoalForm";
+import GoalDetail from "@/components/Goals/GoalDetail";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +70,16 @@ const AppRoutes = () => {
                 <Goals />
               </ProtectedRoute>
             } />
+            <Route path="/goals/add" element={
+              <ProtectedRoute>
+                <AddGoalForm />
+              </ProtectedRoute>
+            } />
+            <Route path="/goals/:id" element={
+              <ProtectedRoute>
+                <GoalDetail />
+              </ProtectedRoute>
+            } />
             <Route path="/profile" element={
               <ProtectedRoute>
                 <Profile />
@@ -76,9 +88,6 @@ const AppRoutes = () => {
             
             {/* Add these routes later as needed */}
             <Route path="/workouts/:id" element={<Navigate to="/workouts" />} />
-            <Route path="/goals/add" element={<Navigate to="/goals" />} />
-            <Route path="/goals/:id" element={<Navigate to="/goals" />} />
-            <Route path="/history" element={<Navigate to="/" />} />
             <Route path="/progress" element={<Navigate to="/" />} />
             <Route path="/settings" element={<Navigate to="/profile" />} />
             

@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   Dumbbell,
   Target,
-  History,
   BarChart2,
   Settings,
   User
@@ -44,7 +43,6 @@ const Sidebar: React.FC = () => {
     { to: "/", icon: LayoutDashboard, label: "Dashboard" },
     { to: "/workouts", icon: Dumbbell, label: "Workouts" },
     { to: "/goals", icon: Target, label: "Goals" },
-    { to: "/history", icon: History, label: "History" },
     { to: "/progress", icon: BarChart2, label: "Progress" },
     { to: "/profile", icon: User, label: "Profile" },
     { to: "/settings", icon: Settings, label: "Settings" }
