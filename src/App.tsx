@@ -14,6 +14,7 @@ import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Auth/Login";
 import Register from "@/pages/Auth/Register";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import AddWorkoutForm from "@/components/Workouts/AddWorkoutForm";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,11 @@ const AppRoutes = () => {
                 <Workouts />
               </ProtectedRoute>
             } />
+            <Route path="/workouts/add" element={
+              <ProtectedRoute>
+                <AddWorkoutForm />
+              </ProtectedRoute>
+            } />
             <Route path="/goals" element={
               <ProtectedRoute>
                 <Goals />
@@ -69,7 +75,6 @@ const AppRoutes = () => {
             } />
             
             {/* Add these routes later as needed */}
-            <Route path="/workouts/add" element={<Navigate to="/workouts" />} />
             <Route path="/workouts/:id" element={<Navigate to="/workouts" />} />
             <Route path="/goals/add" element={<Navigate to="/goals" />} />
             <Route path="/goals/:id" element={<Navigate to="/goals" />} />

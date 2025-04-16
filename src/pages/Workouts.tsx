@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Plus, Filter, Search } from 'lucide-react';
@@ -11,15 +11,21 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { mockWorkouts } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { workoutsAPI } from '@/lib/api';
 
 const Workouts: React.FC = () => {
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [filterType, setFilterType] = React.useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<string>('all');
+
+  const { data: workouts = [], isLoading, error } = useQuery({
+    queryKey: ['workouts'],
+    queryFn: workoutsAPI.getAll,
+  });
 
   // Filter and sort workouts
-  const filteredWorkouts = mockWorkouts
+  const filteredWorkouts = workouts
     .filter(workout => {
       const matchesSearch = workout.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (workout.notes && workout.notes.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -89,62 +95,72 @@ const Workouts: React.FC = () => {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {filteredWorkouts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed rounded-lg">
-            <p className="text-muted-foreground mb-4">No workouts found</p>
-            <Button asChild>
-              <Link to="/workouts/add">
-                <Plus className="mr-2 h-4 w-4" /> Log Your First Workout
-              </Link>
-            </Button>
-          </div>
-        ) : (
-          filteredWorkouts.map(workout => (
-            <Link
-              key={workout.id}
-              to={`/workouts/${workout.id}`}
-              className="block"
-            >
-              <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "px-2 py-1 text-xs font-medium rounded-md",
-                        workout.type === 'strength' && "bg-fitness-blue/10 text-fitness-blue",
-                        workout.type === 'cardio' && "bg-fitness-green/10 text-fitness-green", 
-                        workout.type === 'flexibility' && "bg-fitness-purple/10 text-fitness-purple",
-                        workout.type === 'sports' && "bg-fitness-orange/10 text-fitness-orange",
-                        workout.type === 'other' && "bg-gray-100 text-gray-500"
-                      )}>
-                        {getWorkoutTypeLabel(workout.type)}
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <p>Loading workouts...</p>
+        </div>
+      ) : error ? (
+        <div className="flex justify-center py-12">
+          <p className="text-destructive">Error loading workouts. Please try again.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredWorkouts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed rounded-lg">
+              <p className="text-muted-foreground mb-4">No workouts found</p>
+              <Button asChild>
+                <Link to="/workouts/add">
+                  <Plus className="mr-2 h-4 w-4" /> Log Your First Workout
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            filteredWorkouts.map(workout => (
+              <Link
+                key={workout._id}
+                to={`/workouts/${workout._id}`}
+                className="block"
+              >
+                <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "px-2 py-1 text-xs font-medium rounded-md",
+                          workout.type === 'strength' && "bg-fitness-blue/10 text-fitness-blue",
+                          workout.type === 'cardio' && "bg-fitness-green/10 text-fitness-green", 
+                          workout.type === 'flexibility' && "bg-fitness-purple/10 text-fitness-purple",
+                          workout.type === 'sports' && "bg-fitness-orange/10 text-fitness-orange",
+                          workout.type === 'other' && "bg-gray-100 text-gray-500"
+                        )}>
+                          {getWorkoutTypeLabel(workout.type)}
+                        </div>
+                        <h3 className="font-medium">{workout.name}</h3>
                       </div>
-                      <h3 className="font-medium">{workout.name}</h3>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        {workout.exercises && workout.exercises.length > 0 ? (
+                          <span>{workout.exercises.length} exercises</span>
+                        ) : (
+                          <span>No exercises recorded</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      {workout.exercises && workout.exercises.length > 0 ? (
-                        <span>{workout.exercises.length} exercises</span>
-                      ) : (
-                        <span>No exercises recorded</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-sm">
-                      <div className="font-medium">{formatDate(workout.date)}</div>
-                      <div className="text-muted-foreground">
-                        {workout.duration} min
-                        {workout.caloriesBurned && ` • ${workout.caloriesBurned} cal`}
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm">
+                        <div className="font-medium">{formatDate(workout.date)}</div>
+                        <div className="text-muted-foreground">
+                          {workout.duration} min
+                          {workout.caloriesBurned && ` • ${workout.caloriesBurned} cal`}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))
-        )}
-      </div>
+              </Link>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 };
