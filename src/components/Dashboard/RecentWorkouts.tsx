@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Plus, Dumbbell, Running, Yoga } from 'lucide-react';
+import { ArrowRight, Plus, Dumbbell, Activity, Sun } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { mockWorkouts } from '@/lib/data';
 import { cn } from '@/lib/utils';
@@ -10,8 +10,8 @@ import { cn } from '@/lib/utils';
 // Workout type icons
 const workoutIcons = {
   strength: Dumbbell,
-  cardio: Running,
-  flexibility: Yoga,
+  cardio: Activity,  // Using Activity instead of Running
+  flexibility: Sun,  // Using Sun instead of Yoga
   sports: Dumbbell,
   other: Dumbbell,
 };
